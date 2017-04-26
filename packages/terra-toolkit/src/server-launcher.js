@@ -1,8 +1,15 @@
 import webpack from 'webpack';
 import WebpackDevServer from 'webpack-dev-server';
+import shell from 'shelljs';
+import path from 'path';
 
 exports.launchServer = () => new Promise((resolve) => {
   let compiler;
+
+  // switch to terra site directory
+  const curDir = path.resolve(process.cwd());
+  shell.cd(path.resolve(__dirname, '../../terra-site'));
+
   if (process.env.WEBPACK_CONFIG_PATH) {
     /* eslint-disable global-require, import/no-dynamic-require */
     compiler = webpack(require(process.env.WEBPACK_CONFIG_PATH));
@@ -12,6 +19,7 @@ exports.launchServer = () => new Promise((resolve) => {
     compiler = webpack(require('../../terra-site/webpack.config'));
     /* eslint-enable global-require, import/no-dynamic-require */
   }
+
   compiler.plugin('done', resolve);
 
   module.server = new WebpackDevServer(compiler, {
@@ -19,6 +27,8 @@ exports.launchServer = () => new Promise((resolve) => {
   });
 
   module.server.listen(8080, '0.0.0.0');
+  // switch back
+  shell.cd(curDir);
 });
 
 exports.closeServer = () => new Promise((resolve) => {
