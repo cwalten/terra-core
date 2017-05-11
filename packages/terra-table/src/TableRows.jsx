@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react';
 import 'terra-base/lib/baseStyles';
 import TableRow from './TableRow';
+import TableSubheader from './TableSubheader';
 
 const propTypes = {
   /**
@@ -12,8 +13,8 @@ const propTypes = {
    */
   onClick: PropTypes.func,
   /**
-  * A callback function for onKeyDown action for tab key
-  */
+   * A callback function for onKeyDown action for tab key
+   */
   onKeyDown: PropTypes.func,
 };
 
@@ -22,7 +23,7 @@ const defaultProps = {
   onKeyDown: undefined,
 };
 
-function cloneChildItems(children, onClick, onKeyDown) {
+function cloneChildItems(children, onClick, onKeyDown, numberOfCols) {
   return React.Children.map(children, (child) => {
     const newProps = {};
     if (onClick) {
@@ -34,8 +35,25 @@ function cloneChildItems(children, onClick, onKeyDown) {
     if (child.type === TableRow) {
       return React.cloneElement(child, newProps);
     }
+    if (child.type === TableSubheader) {
+      return React.cloneElement(child, { count: numberOfCols });
+    }
     return child;
   });
+}
+
+function getNumberOfColumns(children) {
+  let count = 16;
+  const childArray = React.Children.toArray(children);
+  for (let i = 0; i < childArray.length; i += 1) {
+    // If the child is of type TableRow and it has children, then return the count of children.
+    // Assumptions: Number of children will be equal to number of columns. Children of TableRow should be TableCell
+    if (childArray[i].type === TableRow && childArray[i].props.children !== null) {
+      count = React.Children.count(childArray[i].props.children);
+      return count >= 16 ? 16 : count;
+    }
+  }
+  return count;
 }
 
 const TableRows = ({
@@ -44,7 +62,8 @@ const TableRows = ({
   onKeyDown,
   ...customProps
 }) => {
-  const cloneChildren = cloneChildItems(children, onClick, onKeyDown);
+  const numberOfCols = getNumberOfColumns(children);
+  const cloneChildren = cloneChildItems(children, onClick, onKeyDown, numberOfCols);
   return (
     <tbody {...customProps}>
       {cloneChildren}

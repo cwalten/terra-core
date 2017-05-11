@@ -12,7 +12,7 @@ const propTypes = {
 const TableCell = ({
   content,
   ...customProps
-  }) => {
+}) => {
   const contentClassName = classNames([
     'terra-Table-cell',
     customProps.className,
